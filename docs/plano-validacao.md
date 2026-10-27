@@ -7,7 +7,7 @@ Proposta para uma equipe de três pessoas. Relacionada ao [parecer técnico](val
 | Integrante informado | Responsabilidade conhecida | Pendente |
 | --- | --- | --- |
 | Ricardo André | Planejamento das issues e pitch de 4 a 5 minutos | Matrícula e eventual função adicional |
-| Rafa | Ainda não informada | Nome completo, matrícula e função |
+| Rafael Cacau | Ainda não informada | Matrícula e função |
 | João Victor | Ainda não informada | Nome completo, matrícula e função |
 
 Representante formal a confirmar. Sugestão de divisão, sem atribuição individual aprovada: uma pessoa organiza a pesquisa/amostras e avaliação, outra conduz os experimentos/PDI e outra coordena documentação/interface. As funções podem se sobrepor; todos revisam as escolhas e os resultados.
