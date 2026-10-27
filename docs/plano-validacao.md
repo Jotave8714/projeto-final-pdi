@@ -6,7 +6,7 @@ Proposta para uma equipe de três pessoas. Relacionada ao [parecer técnico](val
 
 | Integrante informado | Responsabilidade conhecida | Pendente |
 | --- | --- | --- |
-| Responsável por esta solicitação | Planejamento das issues e pitch de 4 a 5 minutos | Nome completo, matrícula e eventual função adicional |
+| Ricardo André | Planejamento das issues e pitch de 4 a 5 minutos | Matrícula e eventual função adicional |
 | Rafa | Ainda não informada | Nome completo, matrícula e função |
 | João Victor | Ainda não informada | Nome completo, matrícula e função |
 
