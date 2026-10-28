@@ -27,6 +27,17 @@ Não é necessário empregar todas as técnicas estudadas na disciplina. A sele�
 
 O projeto propõe investigar a melhoria da qualidade visual e da legibilidade de documentos antigos digitalizados, especialmente documentos impressos ou datilografados com textos desbotados e baixo contraste.
 
+### Delimitação informada pela equipe em 27/10/2026
+
+- A equipe tem três integrantes: o responsável por esta solicitação, Rafa e João Victor. Nomes completos e matrículas ainda precisam ser informados para a entrega formal.
+- O responsável por esta solicitação cuida do planejamento das issues e da apresentação do pitch do dia 29/10/2026, com duração informada de 4 a 5 minutos.
+- A equipe quer uma solução de complexidade compatível com um projeto acadêmico.
+- O foco é melhorar a leitura do texto de documentos antigos parcialmente apagados, como uma certidão de nascimento, desde que ainda exista sinal visual na digitalização.
+- Segundo relato da equipe, a professora orientou restringir o problema. Tratamento de manchas e outras deteriorações não faz parte deste recorte.
+- Certidão de nascimento é um exemplo de documento, não confirmação de acesso a amostras, parceria com cartório ou definição de público-alvo.
+
+A análise e as recomendações técnicas estão em [docs/validacao-pdi.md](docs/validacao-pdi.md). As recomendações desse documento continuam propostas para revisão da equipe; não representam técnicas já implementadas ou eficácia experimentalmente comprovada.
+
 O envelhecimento do papel, o desgaste da tinta e problemas de digitalização podem aproximar a tonalidade das letras à do fundo, dificultando a leitura e a consulta. A proposta é realçar as informações que ainda existem na imagem para torná-las mais visíveis.
 
 Neste contexto, “recuperação” ou “restauração” significa melhorar a visibilidade de sinais presentes na imagem, sem pressupor a reconstrução de conteúdo completamente perdido.
@@ -61,6 +72,7 @@ A contribuição científica pretendida é investigar a adequação das técnica
 - Resultado pretendido: uma versão da imagem visualmente mais legível, a partir do realce das informações existentes.
 - O projeto não pretende ser um restaurador universal de documentos.
 - Não se pretende reconstruir informações completamente perdidas, recuperar documentos rasgados ou solucionar todos os tipos de deterioração.
+- Remoção de manchas, mofo, marcas de água, conteúdo encoberto e reparo de rasgos ficam fora do escopo informado pela equipe.
 - O escopo exato do protótipo, seu funcionamento e suas funcionalidades ainda precisam ser discutidos e justificados.
 
 ## Exigências da Etapa 1
@@ -73,7 +85,7 @@ As exigências abaixo foram informadas pela equipe a partir do documento da prof
 - Nome, matrícula e responsabilidade inicial de cada participante.
 - Identificação do representante da equipe.
 
-Os integrantes, suas responsabilidades e o representante ainda não foram informados neste contexto.
+Integrantes informados: o responsável por esta solicitação, Rafa e João Victor. O primeiro é responsável pelo planejamento das issues e pelo pitch. Nomes completos, matrículas, responsabilidades dos demais integrantes e representante formal ainda precisam ser confirmados. Não inferir esses dados a partir dos perfis do GitHub.
 
 ### Identificação do público-alvo
 
@@ -94,7 +106,7 @@ A entrega será em PDF, acompanhada de apresentação oral. Nesta etapa, não é
 ## Decisões em aberto
 
 - Público-alvo definitivo e contexto de aplicação.
-- Composição da equipe, responsabilidades iniciais e representante.
+- Nomes completos, matrículas, responsabilidades iniciais dos demais integrantes e representante formal. A composição de três integrantes já foi informada.
 - Evidências e dados que sustentem a caracterização do problema social.
 - Objetivos específicos.
 - Técnicas de processamento a investigar e justificativas para sua seleção.
