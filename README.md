@@ -8,6 +8,7 @@ Projeto acadêmico de PDI para investigar o realce de texto desbotado em documen
 
 - [Validação de viabilidade e conteúdos de PDI](docs/validacao-pdi.md)
 - [Plano enxuto de trabalho e validação](docs/plano-validacao.md)
+- [Protocolo de comparação e critérios de sucesso](docs/protocolo-comparacao.md)
 - [Contexto acadêmico e decisões da equipe](AGENTS.md)
 
 ### Legenda de status usada na documentação
