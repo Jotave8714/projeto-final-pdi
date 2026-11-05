@@ -1,6 +1,6 @@
 # Plano enxuto de trabalho e validação
 
-Proposta para uma equipe de três pessoas. Relacionada ao [parecer técnico](validacao-pdi.md). Não há cronograma final aprovado além do pitch informado para 29/10/2026.
+Proposta para uma equipe de três pessoas (projeto REDOC, antes RestauraDoc). Relacionada ao [parecer técnico](validacao-pdi.md). Não há cronograma final aprovado além do pitch informado para 29/10/2026.
 
 ## Divisão da equipe
 
@@ -64,6 +64,6 @@ CER de um OCR fixo pode complementar o estudo posteriormente se houver transcri�
 
 ## Frase recomendada para o pitch
 
-“O RestauraDoc investiga o uso de transformações de intensidade e equalização de histograma para melhorar a legibilidade de texto desbotado em documentos antigos digitalizados, como certidões. Vamos comparar técnicas de realce e avaliar a leitura antes e depois. O foco é ampliar a visibilidade dos traços ainda presentes, com um protótipo simples e sem tratamento de manchas.”
+“O REDOC (antes RestauraDoc) investiga o uso de transformações de intensidade e equalização de histograma para melhorar a legibilidade de texto desbotado em documentos antigos digitalizados, como certidões. Vamos comparar técnicas de realce e avaliar a leitura antes e depois. O foco é ampliar a visibilidade dos traços ainda presentes, com um protótipo simples e sem tratamento de manchas.”
 
 O documento formal ainda precisa de público específico com evidências, nomes completos, matrículas e representante. A proposta técnica não substitui esses requisitos.

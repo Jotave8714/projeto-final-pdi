@@ -85,7 +85,7 @@ Objetivos específicos propostos:
 2. Implementar um protótipo simples com a abordagem selecionada, preservando o original.
 3. Avaliar a leitura e a legibilidade antes e depois e registrar situações em que o processamento falha.
 
-Não é necessário criar um algoritmo novo. A comparação controlada de técnicas, sua justificativa e a avaliação de limites constituem a investigação pretendida. O protocolo e as três métricas propostas estão em [plano-validacao.md](plano-validacao.md).
+Não é necessário criar um algoritmo novo. A comparação controlada de técnicas, sua justificativa e a avaliação de limites constituem a investigação pretendida. O protocolo detalhado está em [protocolo-comparacao.md](protocolo-comparacao.md) e as métricas resumidas em [plano-validacao.md](plano-validacao.md).
 
 ## Evidências de alinhamento com as aulas
 
