@@ -1,0 +1,134 @@
+[
+  {
+    "id": "redoc_01",
+    "arquivo_imagem": "dataset/imagens/redoc_01.png",
+    "arquivo_transcricao": "dataset/transcricoes/redoc_01.txt",
+    "tipo": "impresso_simulado",
+    "degradacao": "baixo_contraste_simulado",
+    "intensidade_relativa": 0.17,
+    "origem": "geracao_sintetica_original",
+    "uso": "livre_no_projeto_REDOC",
+    "grupo": "ajuste"
+  },
+  {
+    "id": "redoc_02",
+    "arquivo_imagem": "dataset/imagens/redoc_02.png",
+    "arquivo_transcricao": "dataset/transcricoes/redoc_02.txt",
+    "tipo": "impresso_simulado",
+    "degradacao": "baixo_contraste_simulado",
+    "intensidade_relativa": 0.22,
+    "origem": "geracao_sintetica_original",
+    "uso": "livre_no_projeto_REDOC",
+    "grupo": "ajuste"
+  },
+  {
+    "id": "redoc_03",
+    "arquivo_imagem": "dataset/imagens/redoc_03.png",
+    "arquivo_transcricao": "dataset/transcricoes/redoc_03.txt",
+    "tipo": "impresso_simulado",
+    "degradacao": "baixo_contraste_simulado",
+    "intensidade_relativa": 0.27,
+    "origem": "geracao_sintetica_original",
+    "uso": "livre_no_projeto_REDOC",
+    "grupo": "ajuste"
+  },
+  {
+    "id": "redoc_04",
+    "arquivo_imagem": "dataset/imagens/redoc_04.png",
+    "arquivo_transcricao": "dataset/transcricoes/redoc_04.txt",
+    "tipo": "impresso_simulado",
+    "degradacao": "baixo_contraste_simulado",
+    "intensidade_relativa": 0.32,
+    "origem": "geracao_sintetica_original",
+    "uso": "livre_no_projeto_REDOC",
+    "grupo": "ajuste"
+  },
+  {
+    "id": "redoc_05",
+    "arquivo_imagem": "dataset/imagens/redoc_05.png",
+    "arquivo_transcricao": "dataset/transcricoes/redoc_05.txt",
+    "tipo": "impresso_simulado",
+    "degradacao": "baixo_contraste_simulado",
+    "intensidade_relativa": 0.37,
+    "origem": "geracao_sintetica_original",
+    "uso": "livre_no_projeto_REDOC",
+    "grupo": "avaliacao"
+  },
+  {
+    "id": "redoc_06",
+    "arquivo_imagem": "dataset/imagens/redoc_06.png",
+    "arquivo_transcricao": "dataset/transcricoes/redoc_06.txt",
+    "tipo": "impresso_simulado",
+    "degradacao": "baixo_contraste_simulado",
+    "intensidade_relativa": 0.42,
+    "origem": "geracao_sintetica_original",
+    "uso": "livre_no_projeto_REDOC",
+    "grupo": "avaliacao"
+  },
+  {
+    "id": "redoc_07",
+    "arquivo_imagem": "dataset/imagens/redoc_07.png",
+    "arquivo_transcricao": "dataset/transcricoes/redoc_07.txt",
+    "tipo": "impresso_simulado",
+    "degradacao": "baixo_contraste_simulado",
+    "intensidade_relativa": 0.19,
+    "origem": "geracao_sintetica_original",
+    "uso": "livre_no_projeto_REDOC",
+    "grupo": "avaliacao"
+  },
+  {
+    "id": "redoc_08",
+    "arquivo_imagem": "dataset/imagens/redoc_08.png",
+    "arquivo_transcricao": "dataset/transcricoes/redoc_08.txt",
+    "tipo": "impresso_simulado",
+    "degradacao": "baixo_contraste_simulado",
+    "intensidade_relativa": 0.25,
+    "origem": "geracao_sintetica_original",
+    "uso": "livre_no_projeto_REDOC",
+    "grupo": "avaliacao"
+  },
+  {
+    "id": "redoc_09",
+    "arquivo_imagem": "dataset/imagens/redoc_09.png",
+    "arquivo_transcricao": "dataset/transcricoes/redoc_09.txt",
+    "tipo": "impresso_simulado",
+    "degradacao": "baixo_contraste_simulado",
+    "intensidade_relativa": 0.3,
+    "origem": "geracao_sintetica_original",
+    "uso": "livre_no_projeto_REDOC",
+    "grupo": "avaliacao"
+  },
+  {
+    "id": "redoc_10",
+    "arquivo_imagem": "dataset/imagens/redoc_10.png",
+    "arquivo_transcricao": "dataset/transcricoes/redoc_10.txt",
+    "tipo": "impresso_simulado",
+    "degradacao": "baixo_contraste_simulado",
+    "intensidade_relativa": 0.35,
+    "origem": "geracao_sintetica_original",
+    "uso": "livre_no_projeto_REDOC",
+    "grupo": "avaliacao"
+  },
+  {
+    "id": "redoc_11",
+    "arquivo_imagem": "dataset/imagens/redoc_11.png",
+    "arquivo_transcricao": "dataset/transcricoes/redoc_11.txt",
+    "tipo": "impresso_simulado",
+    "degradacao": "baixo_contraste_simulado",
+    "intensidade_relativa": 0.4,
+    "origem": "geracao_sintetica_original",
+    "uso": "livre_no_projeto_REDOC",
+    "grupo": "avaliacao"
+  },
+  {
+    "id": "redoc_12",
+    "arquivo_imagem": "dataset/imagens/redoc_12.png",
+    "arquivo_transcricao": "dataset/transcricoes/redoc_12.txt",
+    "tipo": "impresso_simulado",
+    "degradacao": "baixo_contraste_simulado",
+    "intensidade_relativa": 0.46,
+    "origem": "geracao_sintetica_original",
+    "uso": "livre_no_projeto_REDOC",
+    "grupo": "avaliacao"
+  }
+]
