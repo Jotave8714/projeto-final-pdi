@@ -26,3 +26,11 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .meta dd { margin: 0; }
 .meta h2 { margin: 0; font-size: 18px; }
 @media (max-width: 720px) { .compare { grid-template-columns: 1fr; } }
+.compare.three { grid-template-columns: repeat(3, 1fr); }
+.steps { list-style: none; padding: 0; margin: 0 0 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.steps li { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; display: grid; gap: 2px; opacity: 0.6; }
+.steps li.active { opacity: 1; border-color: var(--accent, #aa3bff); }
+.steps li.done { opacity: 1; }
+.steps small { color: var(--text); }
+.panel h2 { margin: 0; font-size: 18px; }
+@media (max-width: 960px) { .compare.three { grid-template-columns: 1fr; } .steps { grid-template-columns: 1fr 1fr; } }
