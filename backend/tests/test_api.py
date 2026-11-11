@@ -69,3 +69,21 @@ def test_metodo_desconhecido():
 
 def test_sem_arquivo():
     assert client.post("/api/process", data={"method": "clahe"}).status_code == 422
+
+
+def test_process_fourier_devolve_png():
+    import io
+
+    import numpy as np
+    from fastapi.testclient import TestClient
+    from PIL import Image
+
+    from app.main import app
+
+    buf = io.BytesIO()
+    Image.fromarray(np.full((64, 64), 128, dtype=np.uint8)).save(buf, format="PNG")
+    r = TestClient(app).post(
+        "/api/process", files={"file": ("a.png", buf.getvalue(), "image/png")}, data={"method": "fourier"}
+    )
+    assert r.status_code == 200
+    assert r.json()["method"] == "fourier"
