@@ -1,8 +1,17 @@
-# RestauraDoc — Contexto acadêmico e orientações do projeto
+# REDOC (anteriormente RestauraDoc) — Contexto acadêmico e orientações do projeto
 
 ## Finalidade deste arquivo
 
 Este arquivo é a referência permanente para compreender o trabalho e orientar futuras contribuições. Preserve o contexto acadêmico, o escopo e as decisões aqui registradas. Atualize-o quando a equipe tomar novas decisões, distinguindo propostas de escolhas aprovadas.
+
+## Legenda de status
+
+- **Definido pela equipe:** informado ou decidido pela equipe.
+- **Proposta:** recomendação para revisão, ainda não aprovada.
+- **Experimental:** técnica a testar, que pode ser descartada.
+- **Resultado não obtido:** nenhum experimento foi executado; nenhuma eficácia é afirmada.
+
+## Fase do projeto
 
 O projeto está na fase de planejamento. A prioridade é analisar a ideia, avaliar sua viabilidade, delimitar o problema e discutir e justificar a abordagem antes do desenvolvimento. Não trate tecnologias, bibliotecas, arquitetura ou funcionalidades como previamente escolhidas. A existência de código ou estrutura no repositório, por si só, não confirma essas decisões.
 
@@ -23,7 +32,7 @@ Não é necessário empregar todas as técnicas estudadas na disciplina. A sele�
 
 ## Ideia e problema
 
-**Nome provisório:** RestauraDoc — Restauração de Documentos Antigos.
+**Nome:** REDOC — Restauração de Documentos Antigos, nome da proposta formal da Etapa 1 (29/10/2026). "RestauraDoc" era o nome provisório nos primeiros documentos e designa o mesmo projeto.
 
 O projeto propõe investigar a melhoria da qualidade visual e da legibilidade de documentos antigos digitalizados, especialmente documentos impressos ou datilografados com textos desbotados e baixo contraste.
 
@@ -56,7 +65,7 @@ Os objetivos específicos ainda deverão ser discutidos e definidos para a propo
 
 ## Público-alvo e contexto de aplicação
 
-O público-alvo definitivo ainda não foi escolhido. Inicialmente, consideram-se pessoas que trabalham com arquivos escolares, bibliotecas e pequenos acervos documentais.
+O público-alvo definitivo ainda precisa ser confirmado contra a proposta formal. O backlog (issue #4) indica **arquivos escolares** como foco; bibliotecas e pequenos acervos documentais seguem como possibilidades em análise.
 
 A equipe ainda precisa delimitar o grupo beneficiado e o contexto concreto de aplicação, levantar suas necessidades e reunir evidências ou dados que demonstrem o problema. Esses públicos são possibilidades em análise, não parcerias ou participantes confirmados.
 
@@ -102,6 +111,20 @@ Integrantes informados: o responsável por esta solicitação, Rafa e João Vict
 - Pelo menos três métricas de avaliação.
 
 A entrega será em PDF, acompanhada de apresentação oral. Nesta etapa, não é obrigatório apresentar um algoritmo implementado, mas é necessário indicar as técnicas que se pretende investigar e justificar sua aplicação. As técnicas e métricas ainda não foram escolhidas.
+
+## Situação das decisões (issue #4)
+
+| Item | Status | Observação |
+| --- | --- | --- |
+| Nome REDOC | Definido pela equipe | Proposta formal da Etapa 1; RestauraDoc é o nome anterior |
+| Recorte: texto desbotado, sem tratamento de manchas | Definido pela equipe | Orientação da professora relatada pela equipe |
+| Equipe: Ricardo André (issues e pitch), Rafael Cacau, João Victor | Definido pela equipe | Matrículas, funções dos demais e representante formal pendentes |
+| Público-alvo: arquivos escolares | Definido pela equipe (conforme issue #4) | Conferir com a proposta formal; evidências do problema pendentes |
+| Condições a comparar: original, contraste global, equalização global, CLAHE | Proposta (backlog, issue #6) | Aguarda congelamento do protocolo |
+| Otsu | Experimental e opcional (issue #13) | Pode ser descartado |
+| Python, NumPy, OpenCV | Proposta | Não adotado formalmente |
+| Eficácia das técnicas | Resultado não obtido | Nenhum experimento executado |
+| Métricas (acerto de palavras, tempo, legibilidade 1-5) | Proposta | Detalhadas em docs/protocolo-comparacao.md |
 
 ## Decisões em aberto
 
