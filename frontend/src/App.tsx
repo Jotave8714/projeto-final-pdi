@@ -2,11 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent } from 'react'
 import mascote from './assets/mascote.png'
 import './App.css'
+import { Histogram } from './Histogram'
+import type { HistogramData } from './Histogram'
 
 type Method = 'clahe' | 'equalize' | 'contrast' | 'fourier' | 'otsu'
 
 type ProcessResponse = {
-  method: Method
+  method: Method | 'grayscale'
   params: Record<string, number | string>
   width: number
   height: number
@@ -20,6 +22,8 @@ type FinalResult = { blob: Blob; steps: { label: string; params: Record<string, 
 type Tuning = { alpha: number; beta: number; clipLimit: number; tileGrid: number }
 
 type Preview = { blob: Blob; params: Record<string, number | string>; width: number; height: number }
+
+type Grayscale = { file: File; blob: Blob; data: HistogramData }
 
 // Ordem fixa do pipeline: cada etapa recebe a saída da anterior.
 const STEPS: { value: Method; label: string; hint: string }[] = [
@@ -75,15 +79,17 @@ function base64ToBlob(b64: string): Blob {
   return new Blob([bytes], { type: 'image/png' })
 }
 
-async function callProcess(file: Blob, method: Method, t: Tuning, signal: AbortSignal): Promise<ProcessResponse> {
+async function callProcess(file: Blob, method: 'grayscale', t: null, signal: AbortSignal): Promise<ProcessResponse & HistogramData>
+async function callProcess(file: Blob, method: Method, t: Tuning, signal: AbortSignal): Promise<ProcessResponse>
+async function callProcess(file: Blob, method: Method | 'grayscale', t: Tuning | null, signal: AbortSignal): Promise<ProcessResponse> {
   const body = new FormData()
   body.append('file', file, 'atual.png')
   body.append('method', method)
-  if (method === 'contrast') {
+  if (method === 'contrast' && t) {
     body.append('alpha', String(t.alpha))
     body.append('beta', String(t.beta))
   }
-  if (method === 'clahe') {
+  if (method === 'clahe' && t) {
     body.append('clip_limit', String(t.clipLimit))
     body.append('tile_grid_size', String(t.tileGrid))
   }
@@ -97,6 +103,9 @@ async function callProcess(file: Blob, method: Method, t: Tuning, signal: AbortS
 
 function App() {
   const [original, setOriginal] = useState<File | null>(null)
+  const [grayscale, setGrayscale] = useState<Grayscale | null>(null)
+  const [grayscaleError, setGrayscaleError] = useState<string | null>(null)
+  const [grayscaleRetry, setGrayscaleRetry] = useState(0)
   // history[0] = original; history[k] = imagem após k etapas aplicadas.
   const [history, setHistory] = useState<Blob[]>([])
   const [alpha, setAlpha] = useState(1.5)
@@ -121,6 +130,30 @@ function App() {
   const currentUrl = useObjectUrl(current)
   const futureUrl = useObjectUrl(preview?.blob ?? null)
   const finalUrl = useObjectUrl(finalResult?.blob ?? null)
+  const activeGrayscale = grayscale?.file === original ? grayscale : null
+  const grayscaleUrl = useObjectUrl(activeGrayscale?.blob ?? null)
+
+  useEffect(() => {
+    if (!original) return
+    const file = original
+    const controller = new AbortController()
+    async function loadGrayscale() {
+      try {
+        const data = await callProcess(file, 'grayscale', null, controller.signal)
+        if (controller.signal.aborted) return
+        setGrayscale({
+          file,
+          blob: base64ToBlob(data.processed_png_base64),
+          data: { histogram: data.histogram, mean: data.mean, standard_deviation: data.standard_deviation },
+        })
+      } catch (err) {
+        if (controller.signal.aborted) return
+        setGrayscaleError(err instanceof Error ? err.message : 'Falha de conexão com a API.')
+      }
+    }
+    void loadGrayscale()
+    return () => controller.abort()
+  }, [original, grayscaleRetry])
 
   // Prévia: resultado da etapa atual aplicado à imagem atual (com debounce nos parâmetros).
   useEffect(() => {
@@ -179,9 +212,11 @@ function App() {
   }, [view, original, alpha, beta, clipLimit, tileGrid])
 
   function handleFile(f: File | null) {
+    if (!f) return
+    setGrayscale(null)
+    setGrayscaleError(null)
     setPreview(null)
     setError(null)
-    if (!f) return
     if (!ACCEPTED.includes(f.type)) {
       setOriginal(null)
       setHistory([])
@@ -246,6 +281,8 @@ function App() {
   }
 
   function reset() {
+    setGrayscale(null)
+    setGrayscaleError(null)
     setView('choice')
     setFinalResult(null)
     setOriginal(null)
@@ -352,6 +389,33 @@ function App() {
         </section>
       )}
 
+
+      {original && (
+        <section className="panel grayscale-panel" aria-label="Escala de cinza e histograma">
+          <h2>Escala de cinza</h2>
+          {grayscaleError ? (
+            <div className="grayscale-error">
+              <p className="error" role="alert">{grayscaleError}</p>
+              <button type="button" className="secondary" onClick={() => {
+                setGrayscaleError(null)
+                setGrayscaleRetry((attempt) => attempt + 1)
+              }}>Tentar carregar novamente</button>
+            </div>
+          ) : (
+            <div className="grayscale-layout">
+              <figure className="grayscale-image">
+                <figcaption>Imagem em escala de cinza</figcaption>
+                {grayscaleUrl
+                  ? <Frame key={grayscaleUrl} src={grayscaleUrl} alt="Documento convertido para escala de cinza" />
+                  : <Skeleton label="Convertendo para escala de cinza" />}
+              </figure>
+              {activeGrayscale
+                ? <Histogram data={activeGrayscale.data} />
+                : <p className="histogram-loading" role="status">Calculando o histograma de intensidades…</p>}
+            </div>
+          )}
+        </section>
+      )}
 
       {original && view === 'steps' && (
         <>

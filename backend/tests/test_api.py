@@ -7,6 +7,8 @@ from fastapi.testclient import TestClient
 from PIL import Image
 
 from app.main import app
+from app.pdi.histograma import calcular_histograma
+from app.pdi.io import codificar_png, ler_imagem, para_cinza
 
 client = TestClient(app)
 
@@ -87,3 +89,54 @@ def test_process_fourier_devolve_png():
     )
     assert r.status_code == 200
     assert r.json()["method"] == "fourier"
+
+
+@pytest.mark.parametrize("image", [
+    np.zeros((8, 12), dtype=np.uint8),
+    np.full((8, 12), 255, dtype=np.uint8),
+    np.arange(256, dtype=np.uint8).reshape(16, 16),
+    np.array([[[255, 0, 0], [0, 255, 0], [0, 0, 255]]], dtype=np.uint8),
+])
+def test_histograma_corresponde_a_imagem_cinza_retornada(image):
+    original = image.copy()
+    response = _post("grayscale", content=codificar_png(image))
+    assert response.status_code == 200
+    body = response.json()
+    cinza = ler_imagem(base64.b64decode(body["processed_png_base64"]))
+    np.testing.assert_array_equal(cinza, para_cinza(image))
+    np.testing.assert_array_equal(image, original)
+    histogram = body["histogram"]
+    assert len(histogram) == 256
+    assert sum(histogram) == body["width"] * body["height"] == cinza.size
+    np.testing.assert_array_equal(histogram, calcular_histograma(cinza))
+    assert body["mean"] == pytest.approx(float(cinza.mean()))
+    assert body["standard_deviation"] == pytest.approx(float(cinza.std()))
+
+
+def test_histograma_de_novo_documento_independe_do_anterior():
+    preto = _post("grayscale", content=codificar_png(np.zeros((4, 5), dtype=np.uint8))).json()
+    branco = _post("grayscale", content=codificar_png(np.full((7, 8), 255, dtype=np.uint8))).json()
+    assert preto["histogram"][0] == 20
+    assert preto["histogram"][255] == 0
+    assert branco["histogram"][0] == 0
+    assert branco["histogram"][255] == 56
+
+
+def test_histograma_preserva_resultados_do_pipeline_sequencial():
+    original = _png()
+    consulta = _post("grayscale", content=original)
+    assert consulta.status_code == 200
+    direto = original
+    apos_consulta = base64.b64decode(consulta.json()["processed_png_base64"])
+    for method in ["clahe", "equalize", "contrast", "fourier", "otsu"]:
+        dados = {"alpha": "2", "beta": "10", "clip_limit": "3", "tile_grid_size": "4"}
+        resposta_direta = _post(method, data=dados, content=direto)
+        resposta_cinza = _post(method, data=dados, content=apos_consulta)
+        assert resposta_direta.status_code == resposta_cinza.status_code == 200
+        assert resposta_direta.json() == resposta_cinza.json()
+        direto = base64.b64decode(resposta_direta.json()["processed_png_base64"])
+        apos_consulta = base64.b64decode(resposta_cinza.json()["processed_png_base64"])
+
+
+def test_histograma_rejeita_imagem_invalida():
+    assert _post("grayscale", content=b"arquivo invalido").status_code == 422
