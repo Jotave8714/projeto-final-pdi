@@ -1,0 +1,75 @@
+.evaluation-modal {
+  width: min(520px, calc(100% - 32px)); max-height: calc(100svh - 40px); box-sizing: border-box;
+  padding: 28px; overflow-y: auto; border: 1px solid var(--border); border-radius: 18px;
+  color: var(--text); background: var(--surface); box-shadow: var(--shadow);
+}
+.evaluation-modal::backdrop { background: rgba(5, 23, 21, 0.76); }
+.evaluation-modal form { display: grid; gap: 20px; }
+.evaluation-modal h2 { margin: 0; font: 700 28px/1.15 var(--heading); color: var(--text-h); }
+.evaluation-rating { margin: 0; padding: 0; border: 0; }
+.evaluation-rating legend { margin-bottom: 10px; font-size: 14px; font-weight: 600; }
+.evaluation-stars { display: flex; gap: 10px; }
+.evaluation-stars label { position: relative; display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer; border-radius: 10px; }
+.evaluation-stars input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.evaluation-stars svg { width: 34px; height: 34px; fill: transparent; stroke: var(--text); stroke-width: 1.4; pointer-events: none; }
+.evaluation-stars .selected svg { fill: var(--accent); stroke: var(--accent); }
+.evaluation-stars label:hover { background: var(--accent-bg); }
+.evaluation-stars label:has(input:focus-visible) { outline: 2px solid var(--accent-bright); outline-offset: 3px; }
+.rating-description { min-height: 3em; font-size: 15px; line-height: 1.5; }
+.evaluation-comment { display: grid; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text-h); }
+.evaluation-comment textarea, .evaluation-filters input, .evaluation-filters select {
+  box-sizing: border-box; min-width: 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg); color: var(--text-h); font: 400 15px/1.5 var(--sans);
+}
+.evaluation-comment textarea { width: 100%; resize: vertical; }
+.evaluation-comment textarea:focus-visible, .evaluation-filters select:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 3px; }
+.evaluation-local-note { font-size: 13px; line-height: 1.5; }
+.evaluation-notice { color: var(--text-h); font-size: 14px; line-height: 1.5; }
+.admin-header { max-width: 760px; gap: 14px; margin-bottom: 32px; }
+.admin-header a { width: fit-content; color: var(--text-h); font-size: 14px; text-underline-offset: 4px; }
+.admin-header h1 { font-size: clamp(32px, 5vw, 48px); line-height: 1.08; }
+.admin-header p:last-child { font-size: 16px; margin: 0; }
+.evaluation-filters { display: flex; align-items: end; flex-wrap: wrap; gap: 16px; }
+.evaluation-filters label { display: grid; min-width: 160px; gap: 6px; font-size: 14px; color: var(--text-h); }
+.evaluation-filters label:nth-child(3) { flex: 1; }
+.evaluation-filters input, .evaluation-filters select { width: 100%; min-height: 44px; }
+.admin-filters > p, .admin-demo > p, .evaluation-summary > p, .admin-app section > p { font-size: 14px; line-height: 1.6; }
+.evaluation-totals { display: flex; gap: 40px; flex-wrap: wrap; margin: 8px 0; }
+.evaluation-totals div { display: grid; gap: 6px; }
+.evaluation-totals dt { font-size: 14px; }
+.evaluation-totals dd { margin: 0; font: 600 30px/1.2 var(--heading); color: var(--text-h); font-variant-numeric: tabular-nums; }
+.evaluation-summary h3 { margin: 6px 0 0; font: 600 16px/1.4 var(--sans); color: var(--text-h); }
+.evaluation-distribution { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.evaluation-distribution li { display: grid; grid-template-columns: 80px minmax(0, 1fr) 90px; align-items: center; gap: 16px; font-size: 14px; }
+.evaluation-distribution li > span:last-child { text-align: right; color: var(--text-h); font-variant-numeric: tabular-nums; }
+.evaluation-distribution small { color: var(--text); font-size: 12px; }
+.evaluation-distribution meter { width: 100%; height: 12px; border: 0; background: var(--code-bg); border-radius: 6px; overflow: hidden; }
+.evaluation-distribution meter::-webkit-meter-bar { background: var(--code-bg); border: 0; border-radius: 6px; }
+.evaluation-distribution meter::-webkit-meter-optimum-value { background: var(--accent); border-radius: 6px; }
+.evaluation-distribution meter::-moz-meter-bar { background: var(--accent); border-radius: 6px; }
+.evaluation-history { margin: 0; padding: 0; list-style: none; }
+.evaluation-history > li { display: grid; gap: 12px; padding: 22px 0; border-top: 1px solid var(--border); }
+.evaluation-history > li:first-child { padding-top: 8px; border-top: 0; }
+.evaluation-history > li:last-child { padding-bottom: 0; }
+.evaluation-history-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.evaluation-score { color: var(--text-h); font-size: 22px; font-variant-numeric: tabular-nums; }
+.evaluation-score > span { font-size: 14px; color: var(--text); font-weight: 400; }
+.evaluation-kind { padding: 3px 8px; border-radius: 6px; background: var(--code-bg); font-size: 12px; color: var(--text-h); }
+.evaluation-kind.simulated { border: 1px solid var(--accent-border); background: var(--accent-bg); }
+.evaluation-history time { margin-left: auto; font-size: 13px; font-variant-numeric: tabular-nums; }
+.evaluation-history-comment { max-width: 75ch; color: var(--text-h); font-size: 15px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.evaluation-history-mode, .evaluation-history details { font-size: 13px; line-height: 1.5; }
+.evaluation-history summary { width: fit-content; cursor: pointer; color: var(--text-h); }
+.evaluation-history details p { margin-top: 8px; overflow-wrap: anywhere; }
+.evaluation-empty { padding: 20px 0; }
+.evaluation-storage-warning { margin-bottom: 24px; font-size: 14px; }
+.admin-app a:focus-visible, .evaluation-history summary:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 3px; }
+@media (max-width: 560px) {
+  .evaluation-modal { padding: 22px 18px; }
+  .evaluation-modal h2 { font-size: 24px; }
+  .evaluation-stars { gap: 8px; }
+  .evaluation-filters label { width: 100%; }
+  .evaluation-totals { gap: 24px; }
+  .evaluation-distribution li { grid-template-columns: 65px minmax(0, 1fr) 75px; gap: 10px; font-size: 13px; }
+  .evaluation-history time { width: 100%; margin-left: 0; }
+}

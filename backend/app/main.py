@@ -1,6 +1,7 @@
 import base64
 from typing import Annotated, Literal
 
+import numpy as np
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,6 +9,7 @@ from app.pdi.clahe import aplicar_clahe
 from app.pdi.contraste import ajustar_contraste
 from app.pdi.equalizacao import equalizar_global
 from app.pdi.fourier import filtrar_fourier
+from app.pdi.histograma import calcular_histograma
 from app.pdi.io import ImagemInvalidaError, codificar_png, ler_imagem, para_cinza
 from app.pdi.otsu import limiarizar_otsu
 
@@ -31,7 +33,7 @@ def health() -> dict[str, str]:
 @app.post("/api/process")
 async def process(
     file: Annotated[UploadFile, File()],
-    method: Annotated[Literal["contrast", "equalize", "clahe", "fourier", "otsu"], Form()] = "clahe",
+    method: Annotated[Literal["grayscale", "contrast", "equalize", "clahe", "fourier", "otsu"], Form()] = "clahe",
     alpha: Annotated[float, Form(ge=0.1, le=5)] = 1.5,
     beta: Annotated[float, Form(ge=-255, le=255)] = 0,
     clip_limit: Annotated[float, Form(gt=0, le=40)] = 2.0,
@@ -43,7 +45,10 @@ async def process(
         raise HTTPException(status_code=413, detail="Arquivo maior que 20 MB.")
     try:
         cinza = para_cinza(ler_imagem(dados))
-        if method == "contrast":
+        if method == "grayscale":
+            saida = cinza
+            params = {}
+        elif method == "contrast":
             saida, p = ajustar_contraste(cinza, alpha=alpha, beta=beta)
             params = {"alpha": p.alpha, "beta": p.beta}
         elif method == "equalize":
@@ -58,6 +63,24 @@ async def process(
         else:
             saida, limiar = limiarizar_otsu(cinza)
             params = {"limiar": int(limiar)}
+
+        resposta = {
+            "method": method,
+            "params": params,
+            "width": int(saida.shape[1]),
+            "height": int(saida.shape[0]),
+            "processed_png_base64": base64.b64encode(codificar_png(saida)).decode("ascii"),
+        }
+        if method in ("grayscale", "otsu"):
+            histograma = calcular_histograma(saida)
+            intensidades = np.arange(256)
+            media = float(np.dot(histograma, intensidades) / saida.size)
+            desvio = float(np.sqrt(np.dot(histograma, (intensidades - media) ** 2) / saida.size))
+            resposta.update({
+                "histogram": histograma.tolist(),
+                "mean": media,
+                "standard_deviation": desvio,
+            })
     except ImagemInvalidaError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except ValueError as exc:
@@ -65,10 +88,4 @@ async def process(
     except Exception as exc:
         raise HTTPException(status_code=500, detail="Erro ao processar a imagem.") from exc
 
-    return {
-        "method": method,
-        "params": params,
-        "width": int(saida.shape[1]),
-        "height": int(saida.shape[0]),
-        "processed_png_base64": base64.b64encode(codificar_png(saida)).decode("ascii"),
-    }
+    return resposta

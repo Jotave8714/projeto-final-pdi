@@ -2,8 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent } from 'react'
 import mascote from './assets/mascote.png'
 import './App.css'
+import { Histogram, HistogramComparison } from './Histogram'
+import type { HistogramData } from './Histogram'
+import { EvaluationModal } from './EvaluationModal'
+import type { ProcessingMode } from './evaluations'
 
-type Method = 'clahe' | 'equalize' | 'contrast' | 'fourier' | 'otsu'
+type Method = 'grayscale' | 'clahe' | 'equalize' | 'contrast' | 'fourier' | 'otsu'
 
 type ProcessResponse = {
   method: Method
@@ -11,18 +15,33 @@ type ProcessResponse = {
   width: number
   height: number
   processed_png_base64: string
-}
+} & Partial<HistogramData>
 
 type View = 'choice' | 'steps' | 'result'
 
-type FinalResult = { blob: Blob; steps: { label: string; params: Record<string, number | string> }[] }
+type FinalResult = {
+  blob: Blob
+  steps: { label: string; params: Record<string, number | string> }[]
+  initialHistogram: HistogramData
+  finalHistogram: HistogramData
+}
 
 type Tuning = { alpha: number; beta: number; clipLimit: number; tileGrid: number }
 
-type Preview = { blob: Blob; params: Record<string, number | string>; width: number; height: number }
+type ImageResult = { blob: Blob; analysis?: HistogramData }
+
+type Preview = ImageResult & {
+  input: Blob
+  method: Method
+  tuningKey: string
+  params: Record<string, number | string>
+  width: number
+  height: number
+}
 
 // Ordem fixa do pipeline: cada etapa recebe a saída da anterior.
 const STEPS: { value: Method; label: string; hint: string }[] = [
+  { value: 'grayscale', label: 'Escala de cinza', hint: 'Converte intensidades e analisa sua distribuição' },
   { value: 'clahe', label: 'CLAHE', hint: 'Realce local com limite de amplificação' },
   { value: 'equalize', label: 'Equalização global', hint: 'Redistribui intensidades em toda a imagem' },
   { value: 'contrast', label: 'Ajuste de contraste', hint: 'g = α·f + β com saturação em 8 bits' },
@@ -95,10 +114,21 @@ async function callProcess(file: Blob, method: Method, t: Tuning, signal: AbortS
   return (await res.json()) as ProcessResponse
 }
 
+function imageResult(data: ProcessResponse): ImageResult {
+  let analysis: HistogramData | undefined
+  if (data.method === 'grayscale' || data.method === 'otsu') {
+    if (data.histogram?.length !== 256 || data.mean === undefined || data.standard_deviation === undefined) {
+      throw new Error('A API retornou uma análise de histograma incompleta. Tente novamente.')
+    }
+    analysis = { histogram: data.histogram, mean: data.mean, standard_deviation: data.standard_deviation }
+  }
+  return { blob: base64ToBlob(data.processed_png_base64), analysis }
+}
+
 function App() {
   const [original, setOriginal] = useState<File | null>(null)
   // history[0] = original; history[k] = imagem após k etapas aplicadas.
-  const [history, setHistory] = useState<Blob[]>([])
+  const [history, setHistory] = useState<ImageResult[]>([])
   const [alpha, setAlpha] = useState(1.5)
   const [beta, setBeta] = useState(0)
   const [clipLimit, setClipLimit] = useState(2)
@@ -111,15 +141,28 @@ function App() {
   const [finalResult, setFinalResult] = useState<FinalResult | null>(null)
   const [finalProgress, setFinalProgress] = useState(0)
   const [finalError, setFinalError] = useState<string | null>(null)
+  const [retry, setRetry] = useState(0)
+  const [evaluationTarget, setEvaluationTarget] = useState<{ blob: Blob; mode: ProcessingMode; techniques: string[] } | null>(null)
+  const [evaluationSaved, setEvaluationSaved] = useState<Blob | null>(null)
 
   const stepIndex = Math.max(history.length - 1, 0)
   const finished = history.length > 0 && stepIndex >= STEPS.length
   const step = history.length > 0 && !finished ? STEPS[stepIndex] : null
-  const current = history.length > 0 ? history[history.length - 1] : null
+  const current = history.length > 0 ? history[history.length - 1].blob : null
+  const initialHistogram = history[1]?.analysis
+  const finalHistogram = finished ? history[history.length - 1]?.analysis : undefined
+  const requestTuning = useMemo<Tuning>(() => ({
+    alpha: step?.value === 'contrast' ? alpha : 1.5,
+    beta: step?.value === 'contrast' ? beta : 0,
+    clipLimit: step?.value === 'clahe' ? clipLimit : 2,
+    tileGrid: step?.value === 'clahe' ? tileGrid : 8,
+  }), [step?.value, alpha, beta, clipLimit, tileGrid])
+  const tuningKey = JSON.stringify(requestTuning)
+  const activePreview = preview?.input === current && preview?.method === step?.value && preview?.tuningKey === tuningKey ? preview : null
 
   const originalUrl = useObjectUrl(original)
   const currentUrl = useObjectUrl(current)
-  const futureUrl = useObjectUrl(preview?.blob ?? null)
+  const futureUrl = useObjectUrl(activePreview?.blob ?? null)
   const finalUrl = useObjectUrl(finalResult?.blob ?? null)
 
   // Prévia: resultado da etapa atual aplicado à imagem atual (com debounce nos parâmetros).
@@ -130,9 +173,13 @@ function App() {
       setLoading(true)
       setError(null)
       try {
-        const data = await callProcess(current, step.value, { alpha, beta, clipLimit, tileGrid }, controller.signal)
+        const data = await callProcess(current, step.value, requestTuning, controller.signal)
+        if (controller.signal.aborted) return
         setPreview({
-          blob: base64ToBlob(data.processed_png_base64),
+          ...imageResult(data),
+          input: current,
+          method: step.value,
+          tuningKey,
           params: data.params,
           width: data.width,
           height: data.height,
@@ -149,9 +196,9 @@ function App() {
       clearTimeout(timer)
       controller.abort()
     }
-  }, [view, current, step, alpha, beta, clipLimit, tileGrid])
+  }, [view, current, step, requestTuning, tuningKey, retry])
 
-  // Resultado final: aplica as quatro etapas em sequência sobre o original.
+  // Resultado final: confirma a conversão inicial e as cinco técnicas em sequência.
   useEffect(() => {
     if (view !== 'result' || !original) return
     const controller = new AbortController()
@@ -161,27 +208,34 @@ function App() {
       setFinalProgress(0)
       try {
         let atual: Blob = original
+        let initialHistogram: HistogramData | undefined
+        let finalHistogram: HistogramData | undefined
         const aplicadas: FinalResult['steps'] = []
         for (const [i, st] of STEPS.entries()) {
           setFinalProgress(i)
           const data = await callProcess(atual, st.value, { alpha, beta, clipLimit, tileGrid }, controller.signal)
-          atual = base64ToBlob(data.processed_png_base64)
+          if (controller.signal.aborted) return
+          const result = imageResult(data)
+          atual = result.blob
+          if (st.value === 'grayscale') initialHistogram = result.analysis
+          if (st.value === 'otsu') finalHistogram = result.analysis
           aplicadas.push({ label: st.label, params: data.params })
         }
+        if (!initialHistogram || !finalHistogram) throw new Error('Não foi possível obter a análise dos histogramas.')
         setFinalProgress(STEPS.length)
-        setFinalResult({ blob: atual, steps: aplicadas })
+        setFinalResult({ blob: atual, steps: aplicadas, initialHistogram, finalHistogram })
       } catch (err) {
         if (controller.signal.aborted) return
         setFinalError(err instanceof Error ? err.message : 'Falha de conexão com a API.')
       }
     })()
     return () => controller.abort()
-  }, [view, original, alpha, beta, clipLimit, tileGrid])
+  }, [view, original, alpha, beta, clipLimit, tileGrid, retry])
 
   function handleFile(f: File | null) {
+    if (!f) return
     setPreview(null)
     setError(null)
-    if (!f) return
     if (!ACCEPTED.includes(f.type)) {
       setOriginal(null)
       setHistory([])
@@ -195,7 +249,7 @@ function App() {
       return
     }
     setOriginal(f)
-    setHistory([f])
+    setHistory([{ blob: f }])
     setFinalResult(null)
     setView('choice')
   }
@@ -222,36 +276,53 @@ function App() {
   }
 
   const advance = useCallback(() => {
-    if (!preview) return
-    setHistory((h) => [...h, preview.blob])
+    if (!activePreview || loading) return
+    setHistory((h) => [...h, { blob: activePreview.blob, analysis: activePreview.analysis }])
     setPreview(null)
-  }, [preview])
+  }, [activePreview, loading])
 
   function back() {
     setPreview(null)
+    setError(null)
     setHistory((h) => (h.length > 1 ? h.slice(0, -1) : h))
   }
 
   function restart() {
-    if (original) setHistory([original])
+    if (original) setHistory([{ blob: original }])
     setPreview(null)
     setError(null)
   }
 
   function openSteps() {
-    if (original) setHistory([original])
+    if (original) setHistory([{ blob: original }])
     setPreview(null)
     setError(null)
     setView('steps')
   }
 
+  function openResult() {
+    setFinalResult(null)
+    setFinalError(null)
+    setFinalProgress(0)
+    setView('result')
+  }
+
   function reset() {
+    setEvaluationTarget(null)
+    setEvaluationSaved(null)
     setView('choice')
     setFinalResult(null)
     setOriginal(null)
     setHistory([])
     setPreview(null)
     setError(null)
+  }
+
+  function openEvaluation(mode: ProcessingMode) {
+    const blob = mode === 'passo-a-passo' ? current : finalResult?.blob
+    if (!blob) return
+    const techniques = mode === 'passo-a-passo' ? STEPS.map((entry) => entry.label) : (finalResult?.steps ?? []).map((entry) => entry.label)
+    setEvaluationTarget({ blob, mode, techniques })
   }
 
   const baseName = original ? original.name.replace(/\.[^.]+$/, '') : 'redoc'
@@ -280,8 +351,8 @@ function App() {
         <p className="eyebrow">Processamento Digital de Imagens</p>
         <h1>RE<span>DOC</span></h1>
         <p>
-          Realce de texto desbotado em documentos antigos digitalizados. Envie o original: ele passa por {STEPS.length} etapas em
-          sequência (CLAHE, equalização global, ajuste de contraste, filtro de Fourier e Otsu) e nunca é alterado.
+          Realce de texto desbotado em documentos antigos digitalizados. A conversão inicial para escala de cinza é seguida
+          por cinco técnicas em sequência (CLAHE, equalização global, ajuste de contraste, filtro de Fourier e Otsu). O original é preservado.
         </p>
       </header>
       <div className="mascot">
@@ -330,9 +401,9 @@ function App() {
             </div>
             <button type="button" className="option primary" onClick={openSteps}>
               <span className="option-title">Ver o processo passo a passo</span>
-              <span className="option-sub">Acompanhe CLAHE, equalização, contraste e Otsu, uma etapa por vez, com prévia antes de aplicar.</span>
+              <span className="option-sub">Comece pela escala de cinza e acompanhe as cinco técnicas, com prévia antes de aplicar cada etapa.</span>
             </button>
-            <button type="button" className="option" onClick={() => setView('result')}>
+            <button type="button" className="option" onClick={openResult}>
               <span className="option-title">Ver o resultado final</span>
               <span className="option-sub">Aplica as {STEPS.length} etapas de uma vez e mostra o original ao lado da imagem tratada.</span>
             </button>
@@ -368,6 +439,9 @@ function App() {
           {step && (
             <section className="panel">
               <h2>Etapa {stepIndex + 1} de {STEPS.length}: {step.label}</h2>
+              {step.value === 'grayscale' && (
+                <p>Converte o documento para 256 níveis de intensidade, do preto ao branco, e calcula o histograma da imagem convertida.</p>
+              )}
               {step.value === 'contrast' && (
                 <div className="params">
                   <label>α (ganho)<input type="number" step="0.1" min="0.1" max="5" value={alpha} onChange={(e) => setAlpha(Number(e.target.value))} /></label>
@@ -381,11 +455,12 @@ function App() {
                 </div>
               )}
               <div className="actions">
-                <button type="button" onClick={advance} disabled={!preview || loading}>
-                  {stepIndex + 1 < STEPS.length ? 'Aplicar e ir para a próxima etapa' : 'Aplicar e concluir'}
+                <button type="button" onClick={advance} disabled={!activePreview || loading}>
+                  {step.value === 'grayscale' ? 'Aplicar escala de cinza e analisar histograma' : stepIndex + 1 < STEPS.length ? 'Aplicar e ir para a próxima etapa' : 'Aplicar e concluir'}
                 </button>
                 <button type="button" className="secondary" onClick={back} disabled={stepIndex === 0}>Voltar etapa</button>
                 <button type="button" className="secondary" onClick={() => setView('choice')}>Voltar à escolha</button>
+                {error && <button type="button" className="secondary" onClick={() => setRetry((attempt) => attempt + 1)}>Tentar novamente</button>}
               </div>
             </section>
           )}
@@ -395,10 +470,12 @@ function App() {
               <h2>Pipeline concluído</h2>
               <div className="actions">
                 {currentUrl && <a className="button" href={currentUrl} download={downloadName}>Baixar resultado final</a>}
+                <button type="button" className="secondary" onClick={() => openEvaluation('passo-a-passo')}>Avaliar legibilidade</button>
                 <button type="button" className="secondary" onClick={back}>Voltar etapa</button>
                 <button type="button" className="secondary" onClick={restart}>Reiniciar etapas</button>
                 <button type="button" className="secondary" onClick={() => setView('choice')}>Voltar à escolha</button>
               </div>
+              {evaluationSaved === current && <p className="evaluation-notice" role="status">Avaliação salva neste navegador. Obrigado por avaliar.</p>}
             </section>
           )}
 
@@ -433,16 +510,30 @@ function App() {
             </figure>
           </section>
 
-          {step && preview && (
+          {finished && initialHistogram && finalHistogram && (
+            <section className="panel histogram-analysis">
+              <h2>Análise dos histogramas</h2>
+              <HistogramComparison initial={initialHistogram} final={finalHistogram} />
+            </section>
+          )}
+
+          {step && activePreview && (
             <section className="panel meta">
               <h2>Parâmetros da prévia</h2>
               <dl>
                 <dt>Método</dt><dd>{step.value}</dd>
-                {Object.entries(preview.params).map(([k, v]) => (
+                {Object.entries(activePreview.params).map(([k, v]) => (
                   <div key={k}><dt>{k}</dt><dd>{String(v)}</dd></div>
                 ))}
-                <dt>Tamanho</dt><dd>{preview.width}×{preview.height}px</dd>
+                <dt>Tamanho</dt><dd>{activePreview.width}×{activePreview.height}px</dd>
               </dl>
+              {step.value === 'grayscale' && activePreview.analysis && <Histogram data={activePreview.analysis} />}
+              {step.value !== 'grayscale' && initialHistogram && (
+                <details className="initial-histogram">
+                  <summary>Histograma inicial · Escala de cinza</summary>
+                  <Histogram data={initialHistogram} title="Histograma inicial" compact />
+                </details>
+              )}
             </section>
           )}
         </>
@@ -460,9 +551,12 @@ function App() {
             {finalError && <p role="alert" className="error">{finalError}</p>}
             <div className="actions">
               {finalUrl && <a className="button" href={finalUrl} download={`${baseName}-redoc-final.png`}>Baixar imagem tratada</a>}
+              {finalResult && <button type="button" className="secondary" onClick={() => openEvaluation('resultado-final')}>Avaliar legibilidade</button>}
               <button type="button" className="secondary" onClick={openSteps}>Ver passo a passo</button>
               <button type="button" className="secondary" onClick={() => setView('choice')}>Voltar à escolha</button>
+              {finalError && <button type="button" className="secondary" onClick={() => setRetry((attempt) => attempt + 1)}>Tentar novamente</button>}
             </div>
+            {finalResult && evaluationSaved === finalResult.blob && <p className="evaluation-notice" role="status">Avaliação salva neste navegador. Obrigado por avaliar.</p>}
           </section>
 
           <section className="compare" aria-live="polite">
@@ -483,7 +577,7 @@ function App() {
           </section>
 
           {finalResult && (
-            <section className="panel meta">
+            <section className="panel meta applied-steps">
               <h2>Etapas aplicadas</h2>
               <dl>
                 {finalResult.steps.map((st) => (
@@ -493,10 +587,17 @@ function App() {
                   </div>
                 ))}
               </dl>
+              <h3>Histograma inicial × Histograma final</h3>
+              <HistogramComparison initial={finalResult.initialHistogram} final={finalResult.finalHistogram} />
             </section>
           )}
         </>
       )}
+      {evaluationTarget && <EvaluationModal mode={evaluationTarget.mode} techniques={evaluationTarget.techniques}
+        onDismiss={() => setEvaluationTarget(null)} onSaved={() => {
+          setEvaluationSaved(evaluationTarget.blob)
+          setEvaluationTarget(null)
+        }} />}
     </main>
   )
 }
