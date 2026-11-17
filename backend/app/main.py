@@ -1,6 +1,7 @@
 import base64
 from typing import Annotated, Literal
 
+import numpy as np
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,6 +9,7 @@ from app.pdi.clahe import aplicar_clahe
 from app.pdi.contraste import ajustar_contraste
 from app.pdi.equalizacao import equalizar_global
 from app.pdi.fourier import filtrar_fourier
+from app.pdi.histograma import calcular_histograma
 from app.pdi.io import ImagemInvalidaError, codificar_png, ler_imagem, para_cinza
 from app.pdi.otsu import limiarizar_otsu
 
@@ -31,7 +33,7 @@ def health() -> dict[str, str]:
 @app.post("/api/process")
 async def process(
     file: Annotated[UploadFile, File()],
-    method: Annotated[Literal["contrast", "equalize", "clahe", "fourier", "otsu"], Form()] = "clahe",
+    method: Annotated[Literal["grayscale", "contrast", "equalize", "clahe", "fourier", "otsu"], Form()] = "clahe",
     alpha: Annotated[float, Form(ge=0.1, le=5)] = 1.5,
     beta: Annotated[float, Form(ge=-255, le=255)] = 0,
     clip_limit: Annotated[float, Form(gt=0, le=40)] = 2.0,
@@ -43,6 +45,21 @@ async def process(
         raise HTTPException(status_code=413, detail="Arquivo maior que 20 MB.")
     try:
         cinza = para_cinza(ler_imagem(dados))
+        if method == "grayscale":
+            histograma = calcular_histograma(cinza)
+            intensidades = np.arange(256)
+            media = float(np.dot(histograma, intensidades) / cinza.size)
+            desvio = float(np.sqrt(np.dot(histograma, (intensidades - media) ** 2) / cinza.size))
+            return {
+                "method": method,
+                "params": {},
+                "width": int(cinza.shape[1]),
+                "height": int(cinza.shape[0]),
+                "processed_png_base64": base64.b64encode(codificar_png(cinza)).decode("ascii"),
+                "histogram": histograma.tolist(),
+                "mean": media,
+                "standard_deviation": desvio,
+            }
         if method == "contrast":
             saida, p = ajustar_contraste(cinza, alpha=alpha, beta=beta)
             params = {"alpha": p.alpha, "beta": p.beta}

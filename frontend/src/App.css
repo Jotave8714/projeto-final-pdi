@@ -148,6 +148,37 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 input[type='radio'], input[type='checkbox'] { accent-color: var(--accent); }
 
+.grayscale-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 24px; align-items: start; }
+.grayscale-image, .histogram { min-width: 0; margin: 0; display: grid; gap: 14px; }
+.grayscale-image figcaption, .histogram figcaption { font: 600 15px/1.4 var(--sans); color: var(--text-h); }
+.grayscale-image .frame.is-loaded img { max-height: 380px; }
+.histogram svg { display: block; width: 100%; height: auto; overflow: visible; font: 14px var(--sans); fill: var(--text); }
+.histogram-axis-title { fill: var(--text-h); font-weight: 600; }
+.histogram-tick line { stroke: var(--border); stroke-width: 1; }
+.histogram-bar { fill: var(--accent); }
+.histogram-bar:hover { fill: var(--text-h); }
+.histogram-axes { fill: none; stroke: var(--text-h); stroke-width: 1; }
+.histogram-stats { display: flex; flex-wrap: wrap; gap: 12px 28px; margin: 0; font-size: 14px; }
+.histogram-stats div { display: flex; flex-wrap: wrap; gap: 8px; }
+.histogram-stats dt { color: var(--text); }
+.histogram-stats dd { margin: 0; color: var(--text-h); font-weight: 600; font-variant-numeric: tabular-nums; }
+.histogram p { max-width: 65ch; font-size: 14px; line-height: 1.6; }
+.histogram details { font-size: 14px; }
+.histogram summary { cursor: pointer; color: var(--text-h); }
+.histogram-table { max-height: 220px; overflow: auto; margin-top: 12px; border-radius: 10px; border: 1px solid var(--border); }
+.histogram table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.histogram th, .histogram td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--border); }
+.histogram thead th { position: sticky; top: 0; background: var(--surface); color: var(--text-h); }
+.histogram summary:focus-visible, .histogram-table:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 3px; }
+.histogram-loading { align-self: center; font-size: 14px; }
+.grayscale-error { display: grid; gap: 12px; justify-items: start; }
+
+@media (max-width: 720px) {
+  .grayscale-layout { grid-template-columns: minmax(0, 1fr); }
+  .histogram svg { font-size: 28px; }
+  .grayscale-panel { padding: 16px; }
+}
+
 @media (max-width: 960px) {
   .choice { grid-template-columns: 1fr; }
   .compare.three { grid-template-columns: 1fr; }
