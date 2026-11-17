@@ -122,20 +122,29 @@ const demoComments = [
   'A leitura ficou razoável, sem resolver os trechos mais apagados.',
   'A nitidez do texto melhorou bastante para a leitura.',
 ]
-const demoScores = [5, 4, 3, 2, 4, 5, 3, 1, 4, 3, 5, 2, 4, 4, 3, 5, 2, 4, 5, 3, 1, 4, 3, 5]
+// Distribution chosen for a fictional positive scenario, not measured results.
+export const DEMO_EVALUATION_COUNT = 230
+const demoScores = [5, 4, 5, 4, 5, 5, 4, 5, 5, 3]
+const commentIndexes: Record<number, number[]> = {
+  3: [2, 6, 9, 14, 19, 22],
+  4: [1, 4, 8, 12, 13, 17, 21],
+  5: [0, 5, 10, 15, 18, 23],
+}
 
 export function loadDemoEvaluations(storage: Storage = window.localStorage) {
   let added = 0
-  for (let index = 0; index < 24; index++) {
+  for (let index = 0; index < DEMO_EVALUATION_COUNT; index++) {
     const id = `demo-202611-${String(index + 1).padStart(2, '0')}`
     if (storage.getItem(EVALUATION_PREFIX + id) !== null) continue
-    const day = 12 + Math.floor(index / 4)
-    const hour = String(9 + (index % 4) * 3).padStart(2, '0')
+    const day = 12 + index % 6
+    const hour = String(9 + Math.floor(index / 6) % 12).padStart(2, '0')
     const minute = String((index * 7) % 60).padStart(2, '0')
+    const score = demoScores[index % demoScores.length]
+    const comments = commentIndexes[score]
     saveEvaluation({
       id,
-      nota: demoScores[index],
-      comentario: demoComments[index],
+      nota: score,
+      comentario: demoComments[comments[Math.floor(index / demoScores.length) % comments.length]],
       dataHora: new Date(`2026-11-${day}T${hour}:${minute}:00-03:00`).toISOString(),
       modo: index % 2 === 0 ? 'passo-a-passo' : 'resultado-final',
       tecnicas: ['Escala de cinza', 'CLAHE', 'Equalização global', 'Ajuste de contraste', 'Filtro de Fourier', 'Otsu'],
