@@ -140,3 +140,37 @@ def test_histograma_preserva_resultados_do_pipeline_sequencial():
 
 def test_histograma_rejeita_imagem_invalida():
     assert _post("grayscale", content=b"arquivo invalido").status_code == 422
+
+
+@pytest.mark.parametrize("image", [
+    np.zeros((8, 12), dtype=np.uint8),
+    np.full((8, 12), 255, dtype=np.uint8),
+    np.arange(256, dtype=np.uint8).reshape(16, 16),
+])
+def test_histograma_final_corresponde_a_saida_real_de_otsu(image):
+    response = _post("otsu", content=codificar_png(image))
+    assert response.status_code == 200
+    body = response.json()
+    saida = ler_imagem(base64.b64decode(body["processed_png_base64"]))
+    assert len(body["histogram"]) == 256
+    assert sum(body["histogram"]) == image.size
+    assert sum(body["histogram"][1:255]) == 0
+    np.testing.assert_array_equal(body["histogram"], calcular_histograma(saida))
+    assert body["mean"] == pytest.approx(float(saida.mean()))
+    assert body["standard_deviation"] == pytest.approx(float(saida.std()))
+
+
+def test_histogramas_inicial_e_final_sao_das_respectivas_imagens():
+    atual = _png()
+    inicial = _post("grayscale", content=atual).json()
+    atual = base64.b64decode(inicial["processed_png_base64"])
+    for method in ["clahe", "equalize", "contrast", "fourier", "otsu"]:
+        response = _post(method, content=atual)
+        assert response.status_code == 200
+        final = response.json()
+        atual = base64.b64decode(final["processed_png_base64"])
+    assert inicial["histogram"] != final["histogram"]
+    assert sum(inicial["histogram"]) == sum(final["histogram"]) == 64 * 48
+    assert sum(inicial["histogram"][1:255]) == 64 * 48
+    assert sum(final["histogram"][1:255]) == 0
+    np.testing.assert_array_equal(final["histogram"], calcular_histograma(ler_imagem(atual)))

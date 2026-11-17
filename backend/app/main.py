@@ -46,21 +46,9 @@ async def process(
     try:
         cinza = para_cinza(ler_imagem(dados))
         if method == "grayscale":
-            histograma = calcular_histograma(cinza)
-            intensidades = np.arange(256)
-            media = float(np.dot(histograma, intensidades) / cinza.size)
-            desvio = float(np.sqrt(np.dot(histograma, (intensidades - media) ** 2) / cinza.size))
-            return {
-                "method": method,
-                "params": {},
-                "width": int(cinza.shape[1]),
-                "height": int(cinza.shape[0]),
-                "processed_png_base64": base64.b64encode(codificar_png(cinza)).decode("ascii"),
-                "histogram": histograma.tolist(),
-                "mean": media,
-                "standard_deviation": desvio,
-            }
-        if method == "contrast":
+            saida = cinza
+            params = {}
+        elif method == "contrast":
             saida, p = ajustar_contraste(cinza, alpha=alpha, beta=beta)
             params = {"alpha": p.alpha, "beta": p.beta}
         elif method == "equalize":
@@ -75,6 +63,24 @@ async def process(
         else:
             saida, limiar = limiarizar_otsu(cinza)
             params = {"limiar": int(limiar)}
+
+        resposta = {
+            "method": method,
+            "params": params,
+            "width": int(saida.shape[1]),
+            "height": int(saida.shape[0]),
+            "processed_png_base64": base64.b64encode(codificar_png(saida)).decode("ascii"),
+        }
+        if method in ("grayscale", "otsu"):
+            histograma = calcular_histograma(saida)
+            intensidades = np.arange(256)
+            media = float(np.dot(histograma, intensidades) / saida.size)
+            desvio = float(np.sqrt(np.dot(histograma, (intensidades - media) ** 2) / saida.size))
+            resposta.update({
+                "histogram": histograma.tolist(),
+                "mean": media,
+                "standard_deviation": desvio,
+            })
     except ImagemInvalidaError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except ValueError as exc:
@@ -82,10 +88,4 @@ async def process(
     except Exception as exc:
         raise HTTPException(status_code=500, detail="Erro ao processar a imagem.") from exc
 
-    return {
-        "method": method,
-        "params": params,
-        "width": int(saida.shape[1]),
-        "height": int(saida.shape[0]),
-        "processed_png_base64": base64.b64encode(codificar_png(saida)).decode("ascii"),
-    }
+    return resposta

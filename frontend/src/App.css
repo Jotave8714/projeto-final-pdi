@@ -87,7 +87,7 @@ header p:last-child { margin: 6px 0 0; font-size: 17px; line-height: 1.5; color:
 .progress span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width 0.4s; }
 
 /* ---------- Etapas ---------- */
-.steps { list-style: none; padding: 0; margin: 0 0 24px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; counter-reset: s; }
+.steps { list-style: none; padding: 0; margin: 0 0 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; counter-reset: s; }
 .steps li { position: relative; display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); opacity: 0.62; transition: opacity 0.2s, border-color 0.2s, background-color 0.2s; }
 .steps li.active { opacity: 1; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
 .steps li.done { opacity: 1; }
@@ -148,10 +148,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 input[type='radio'], input[type='checkbox'] { accent-color: var(--accent); }
 
-.grayscale-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 24px; align-items: start; }
-.grayscale-image, .histogram { min-width: 0; margin: 0; display: grid; gap: 14px; }
-.grayscale-image figcaption, .histogram figcaption { font: 600 15px/1.4 var(--sans); color: var(--text-h); }
-.grayscale-image .frame.is-loaded img { max-height: 380px; }
+.histogram { min-width: 0; margin: 0; display: grid; gap: 14px; }
+.histogram figcaption { font: 600 15px/1.4 var(--sans); color: var(--text-h); }
 .histogram svg { display: block; width: 100%; height: auto; overflow: visible; font: 14px var(--sans); fill: var(--text); }
 .histogram-axis-title { fill: var(--text-h); font-weight: 600; }
 .histogram-tick line { stroke: var(--border); stroke-width: 1; }
@@ -170,13 +168,24 @@ input[type='radio'], input[type='checkbox'] { accent-color: var(--accent); }
 .histogram th, .histogram td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--border); }
 .histogram thead th { position: sticky; top: 0; background: var(--surface); color: var(--text-h); }
 .histogram summary:focus-visible, .histogram-table:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 3px; }
-.histogram-loading { align-self: center; font-size: 14px; }
-.grayscale-error { display: grid; gap: 12px; justify-items: start; }
+.histogram-comparison { display: grid; gap: 20px; min-width: 0; }
+.histogram-comparison > p { max-width: 75ch; font-size: 14px; line-height: 1.6; }
+.histogram-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.initial-histogram { min-width: 0; font-size: 14px; }
+.initial-histogram > summary { color: var(--text-h); cursor: pointer; }
+.initial-histogram > summary:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 3px; }
+.initial-histogram > .histogram { margin-top: 20px; max-width: 620px; }
+.applied-steps h3 { margin: 12px 0 0; color: var(--text-h); font: 600 18px/1.4 var(--heading); }
+.meta .histogram-stats { display: flex; gap: 12px 28px; }
+.meta .histogram-stats > div { display: flex; }
+.meta .histogram-stats dt { font: inherit; letter-spacing: normal; text-transform: none; }
+.meta .histogram-stats dd { font-weight: 600; }
+.meta > .histogram { max-width: 720px; }
+.histogram-grid .histogram svg { font-size: 18px; }
 
 @media (max-width: 720px) {
-  .grayscale-layout { grid-template-columns: minmax(0, 1fr); }
-  .histogram svg { font-size: 28px; }
-  .grayscale-panel { padding: 16px; }
+  .histogram-grid { grid-template-columns: minmax(0, 1fr); }
+  .histogram svg, .histogram-grid .histogram svg { font-size: 28px; }
 }
 
 @media (max-width: 960px) {
