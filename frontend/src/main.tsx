@@ -5,10 +5,10 @@ import App from './App.tsx'
 import Admin from './Admin.tsx'
 import './evaluations.css'
 
-const isAdmin = window.location.pathname.replace(/\/+$/, '') === '/admin'
+const isReview = window.location.pathname.replace(/\/+$/, '') === '/review'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {isAdmin ? <Admin /> : <App />}
+    {isReview ? <Admin /> : <App />}
   </StrictMode>,
 )

@@ -49,19 +49,20 @@ test('cada ID tem sua chave e reenviar o mesmo ID não duplica a avaliação', (
   assert.equal(readEvaluations(storage).evaluations.length, 2)
 })
 
-test('a carga gera exatamente 24 registros identificados e é idempotente', () => {
+test('a carga gera exatamente 230 registros identificados e é idempotente', () => {
   const storage = new MemoryStorage()
-  assert.equal(loadDemoEvaluations(storage), 24)
+  assert.equal(loadDemoEvaluations(storage), 230)
   assert.equal(loadDemoEvaluations(storage), 0)
   const { evaluations } = readEvaluations(storage)
-  assert.equal(evaluations.length, 24)
-  assert.equal(new Set(evaluations.map((entry) => entry.id)).size, 24)
+  assert.equal(evaluations.length, 230)
+  assert.equal(new Set(evaluations.map((entry) => entry.id)).size, 230)
   assert(evaluations.every((entry) => entry.simulado === true))
-  assert.equal(new Set(evaluations.map((entry) => entry.nota)).size, 5)
+  assert.equal(new Set(evaluations.map((entry) => entry.nota)).size, 3)
+  assert.equal(summarizeEvaluations(evaluations).average, 4.5)
   const days = evaluations.map(evaluationDay).sort()
   assert.equal(days[0], '2026-11-12')
   assert.equal(days.at(-1), '2026-11-17')
-  for (let day = 12; day <= 17; day++) assert.equal(days.filter((entry) => entry === `2026-11-${day}`).length, 4)
+  for (let day = 12; day <= 17; day++) assert.equal(days.filter((entry) => entry === `2026-11-${day}`).length, day <= 13 ? 39 : 38)
 })
 
 test('carga interrompida pode ser completada sem duplicações', () => {
@@ -75,9 +76,9 @@ test('carga interrompida pode ser completada sem duplicações', () => {
   const storage = new LimitedStorage()
   assert.throws(() => loadDemoEvaluations(storage))
   assert.equal(storage.length, 5)
-  storage.remaining = 100
-  assert.equal(loadDemoEvaluations(storage), 19)
-  assert.equal(storage.length, 24)
+  storage.remaining = 300
+  assert.equal(loadDemoEvaluations(storage), 225)
+  assert.equal(storage.length, 230)
 })
 
 test('limpar simulações preserva avaliações reais e outras chaves', () => {
@@ -85,7 +86,7 @@ test('limpar simulações preserva avaliações reais e outras chaves', () => {
   saveEvaluation(real(), storage)
   storage.setItem('outra-chave', 'preservar')
   loadDemoEvaluations(storage)
-  assert.equal(clearDemoEvaluations(storage), 24)
+  assert.equal(clearDemoEvaluations(storage), 230)
   assert.deepEqual(readEvaluations(storage).evaluations, [real()])
   assert.equal(storage.getItem('outra-chave'), 'preservar')
   assert.equal(clearDemoEvaluations(storage), 0)
@@ -96,8 +97,8 @@ test('filtros incluem os limites do período no fuso de Fortaleza e separam os t
   loadDemoEvaluations(storage)
   saveEvaluation(real(), storage)
   const { evaluations } = readEvaluations(storage)
-  assert.equal(filterEvaluations(evaluations, { from: '2026-11-12', to: '2026-11-12', simulado: true }).length, 4)
-  assert.equal(filterEvaluations(evaluations, { from: '2026-11-12', to: '2026-11-17', simulado: true }).length, 24)
+  assert.equal(filterEvaluations(evaluations, { from: '2026-11-12', to: '2026-11-12', simulado: true }).length, 39)
+  assert.equal(filterEvaluations(evaluations, { from: '2026-11-12', to: '2026-11-17', simulado: true }).length, 230)
   assert.equal(filterEvaluations(evaluations, { from: '', to: '', simulado: false }).length, 1)
   assert.equal(evaluationDay({ ...real(), dataHora: '2026-11-13T01:00:00.000Z' }), '2026-11-12')
 })

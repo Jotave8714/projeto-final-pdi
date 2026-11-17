@@ -63,6 +63,11 @@
 .evaluation-history details p { margin-top: 8px; overflow-wrap: anywhere; }
 .evaluation-empty { padding: 20px 0; }
 .evaluation-storage-warning { margin-bottom: 24px; font-size: 14px; }
+.admin-demo-tools { margin: 24px 0; font-size: 14px; line-height: 1.6; }
+.admin-demo-tools > summary { width: fit-content; cursor: pointer; color: var(--text-h); }
+.admin-demo-tools > p { margin: 12px 0; max-width: 70ch; }
+.admin-demo-tools > summary:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 3px; }
+.admin-storage-note { margin-top: 24px; font-size: 13px; line-height: 1.6; max-width: 75ch; }
 .admin-app a:focus-visible, .evaluation-history summary:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 3px; }
 @media (max-width: 560px) {
   .evaluation-modal { padding: 22px 18px; }

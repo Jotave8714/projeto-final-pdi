@@ -23,8 +23,8 @@ function EvaluationSummary({ evaluations, simulated }: { evaluations: Evaluation
   const { count, average, distribution } = summarizeEvaluations(evaluations)
   return (
     <section className="panel evaluation-summary" aria-labelledby={titleId} data-type={simulated ? 'simulated' : 'real'}>
-      <h2 id={titleId}>{simulated ? 'Dados simulados · demonstração' : 'Indicadores acadêmicos · avaliações reais'}</h2>
-      <p>{simulated ? 'Avaliações fictícias para demonstrar o painel no período selecionado.' : 'Calculados exclusivamente com avaliações reais no período selecionado.'}</p>
+      <h2 id={titleId}>Resumo das avaliações</h2>
+      <p>Avaliações da origem selecionada no período informado.</p>
       <dl className="evaluation-totals">
         <div><dt>Quantidade de avaliações</dt><dd data-metric="count">{count}</dd></div>
         <div><dt>Média de estrelas</dt><dd data-metric="average">{average === null ? '—' : `${numberFormatter.format(average)} / 5`}</dd></div>
@@ -67,7 +67,7 @@ export default function Admin() {
       const added = loadDemoEvaluations()
       refresh()
       setType('simulated')
-      setNotice(added ? `${added} avaliações simuladas adicionadas.` : 'Os registros de demonstração já estão carregados.')
+      setNotice(added ? `${added} exemplos adicionados.` : 'Os exemplos já estão carregados.')
     } catch {
       setSnapshot({ ...readSnapshot(), error: 'Não foi possível concluir a carga. Verifique o espaço disponível e tente novamente para completar os registros restantes.' })
     }
@@ -77,7 +77,7 @@ export default function Admin() {
     try {
       const removed = clearDemoEvaluations()
       refresh()
-      setNotice(`${removed} avaliações simuladas removidas.`)
+      setNotice(`${removed} exemplos removidos.`)
     } catch {
       setSnapshot({ ...readSnapshot(), error: 'Não foi possível concluir a remoção dos dados simulados. Tente novamente.' })
     }
@@ -93,37 +93,27 @@ export default function Admin() {
       <header className="admin-header">
         <a href="/">Voltar ao REDOC</a>
         <h1>Avaliações de legibilidade</h1>
-        <p>Recurso administrativo demonstrativo. Os dados ficam neste navegador e neste endereço, com acesso local sem autenticação.</p>
+        <p>Acompanhe as notas, a distribuição e os comentários sobre a legibilidade.</p>
       </header>
       <section className="panel admin-filters" aria-label="Filtros de avaliações">
         <div className="evaluation-filters">
           <label>De<input type="date" value={from} max={to || undefined} onChange={(event) => setFrom(event.target.value)} /></label>
           <label>Até<input type="date" value={to} min={from || undefined} onChange={(event) => setTo(event.target.value)} /></label>
-          <label>Tipo de avaliação<select value={type} onChange={(event) => setType(event.target.value)}>
-            <option value="real">Reais</option><option value="simulated">Simuladas</option>
+          <label>Origem dos dados<select value={type} onChange={(event) => setType(event.target.value)}>
+            <option value="real">Formulário</option><option value="simulated">Demonstração</option>
           </select></label>
           <button type="button" className="secondary" onClick={() => { setFrom(''); setTo(''); setType('real') }}>Limpar filtros</button>
         </div>
         <p>Datas e horários de Fortaleza (UTC−3). O período inclui as duas datas selecionadas.</p>
         {invalidPeriod && <p className="error" role="alert">A data inicial deve ser anterior ou igual à data final.</p>}
       </section>
-      <section className="panel admin-demo" aria-label="Dados de demonstração">
-        <h2>Dados de demonstração</h2>
-        <p>24 avaliações fictícias entre 12 e 17 de novembro de 2026, identificadas como simuladas.</p>
-        <div className="actions">
-          <button type="button" onClick={loadDemo}>Carregar dados de demonstração</button>
-          <button type="button" className="secondary" disabled={!hasSimulated} onClick={clearDemo}>Limpar dados simulados</button>
-        </div>
-        {notice && <p role="status" className="evaluation-notice">{notice}</p>}
-      </section>
       {error && <div className="panel"><p className="error" role="alert">{error}</p><button className="secondary" onClick={refresh}>Tentar novamente</button></div>}
       {invalidCount > 0 && <p className="evaluation-storage-warning" role="status">{invalidCount} registros locais inválidos foram ignorados.</p>}
       {loaded && !invalidPeriod && (
         <>
-          <EvaluationSummary evaluations={realEvaluations} simulated={false} />
-          {type === 'simulated' && <EvaluationSummary evaluations={simulatedEvaluations} simulated />}
+          <EvaluationSummary evaluations={history} simulated={type === 'simulated'} />
           <section className="panel" aria-labelledby="evaluation-history-title">
-            <h2 id="evaluation-history-title">Histórico de avaliações {type === 'simulated' ? 'simuladas' : 'reais'}</h2>
+            <h2 id="evaluation-history-title">Histórico de avaliações</h2>
             <p>{history.length} avaliações no período selecionado.</p>
             {history.length === 0 ? <p className="evaluation-empty">Nenhuma avaliação encontrada para estes filtros.</p> : (
               <ol className="evaluation-history">
@@ -131,7 +121,6 @@ export default function Admin() {
                   <li key={entry.id}>
                     <div className="evaluation-history-heading">
                       <strong className="evaluation-score" aria-label={`${entry.nota} de 5 estrelas`}>{entry.nota}<span> / 5</span></strong>
-                      <span className={`evaluation-kind ${entry.simulado ? 'simulated' : ''}`}>{entry.simulado ? 'Simulada · dado fictício' : 'Real'}</span>
                       <time dateTime={entry.dataHora}>{dateFormatter.format(new Date(entry.dataHora))}</time>
                     </div>
                     <p className="evaluation-history-comment">{entry.comentario || 'Sem comentário.'}</p>
@@ -144,6 +133,19 @@ export default function Admin() {
           </section>
         </>
       )}
+      <details className="admin-demo-tools">
+        <summary>Gerenciar dados de demonstração</summary>
+        <p>Carregue ou remova os 230 exemplos do painel. As notas enviadas pelo formulário são preservadas.</p>
+        <div className="actions">
+          <button type="button" className="secondary" onClick={loadDemo}>Carregar exemplos</button>
+          <button type="button" className="secondary" disabled={!hasSimulated} onClick={clearDemo}>Remover exemplos</button>
+        </div>
+        {notice && <p role="status" className="evaluation-notice">{notice}</p>}
+      </details>
+      <footer className="admin-storage-note">
+        <p><strong>Sobre os dados:</strong> a origem “Demonstração” contém avaliações fictícias geradas para simular o painel; não representa uma pesquisa realizada com participantes. A distribuição das notas foi definida para ilustrar um cenário de média alta. Esses registros ficam separados das notas enviadas pelo formulário.</p>
+        <p>Dados armazenados somente neste navegador e endereço. O envio pelo formulário, por si só, não comprova uma pesquisa controlada.</p>
+      </footer>
     </main>
   )
 }
