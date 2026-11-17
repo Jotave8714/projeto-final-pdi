@@ -4,6 +4,8 @@ import mascote from './assets/mascote.png'
 import './App.css'
 import { Histogram, HistogramComparison } from './Histogram'
 import type { HistogramData } from './Histogram'
+import { EvaluationModal } from './EvaluationModal'
+import type { ProcessingMode } from './evaluations'
 
 type Method = 'grayscale' | 'clahe' | 'equalize' | 'contrast' | 'fourier' | 'otsu'
 
@@ -140,6 +142,8 @@ function App() {
   const [finalProgress, setFinalProgress] = useState(0)
   const [finalError, setFinalError] = useState<string | null>(null)
   const [retry, setRetry] = useState(0)
+  const [evaluationTarget, setEvaluationTarget] = useState<{ blob: Blob; mode: ProcessingMode; techniques: string[] } | null>(null)
+  const [evaluationSaved, setEvaluationSaved] = useState<Blob | null>(null)
 
   const stepIndex = Math.max(history.length - 1, 0)
   const finished = history.length > 0 && stepIndex >= STEPS.length
@@ -304,12 +308,21 @@ function App() {
   }
 
   function reset() {
+    setEvaluationTarget(null)
+    setEvaluationSaved(null)
     setView('choice')
     setFinalResult(null)
     setOriginal(null)
     setHistory([])
     setPreview(null)
     setError(null)
+  }
+
+  function openEvaluation(mode: ProcessingMode) {
+    const blob = mode === 'passo-a-passo' ? current : finalResult?.blob
+    if (!blob) return
+    const techniques = mode === 'passo-a-passo' ? STEPS.map((entry) => entry.label) : (finalResult?.steps ?? []).map((entry) => entry.label)
+    setEvaluationTarget({ blob, mode, techniques })
   }
 
   const baseName = original ? original.name.replace(/\.[^.]+$/, '') : 'redoc'
@@ -457,10 +470,12 @@ function App() {
               <h2>Pipeline concluído</h2>
               <div className="actions">
                 {currentUrl && <a className="button" href={currentUrl} download={downloadName}>Baixar resultado final</a>}
+                <button type="button" className="secondary" onClick={() => openEvaluation('passo-a-passo')}>Avaliar legibilidade</button>
                 <button type="button" className="secondary" onClick={back}>Voltar etapa</button>
                 <button type="button" className="secondary" onClick={restart}>Reiniciar etapas</button>
                 <button type="button" className="secondary" onClick={() => setView('choice')}>Voltar à escolha</button>
               </div>
+              {evaluationSaved === current && <p className="evaluation-notice" role="status">Avaliação salva neste navegador. Obrigado por avaliar.</p>}
             </section>
           )}
 
@@ -536,10 +551,12 @@ function App() {
             {finalError && <p role="alert" className="error">{finalError}</p>}
             <div className="actions">
               {finalUrl && <a className="button" href={finalUrl} download={`${baseName}-redoc-final.png`}>Baixar imagem tratada</a>}
+              {finalResult && <button type="button" className="secondary" onClick={() => openEvaluation('resultado-final')}>Avaliar legibilidade</button>}
               <button type="button" className="secondary" onClick={openSteps}>Ver passo a passo</button>
               <button type="button" className="secondary" onClick={() => setView('choice')}>Voltar à escolha</button>
               {finalError && <button type="button" className="secondary" onClick={() => setRetry((attempt) => attempt + 1)}>Tentar novamente</button>}
             </div>
+            {finalResult && evaluationSaved === finalResult.blob && <p className="evaluation-notice" role="status">Avaliação salva neste navegador. Obrigado por avaliar.</p>}
           </section>
 
           <section className="compare" aria-live="polite">
@@ -576,6 +593,11 @@ function App() {
           )}
         </>
       )}
+      {evaluationTarget && <EvaluationModal mode={evaluationTarget.mode} techniques={evaluationTarget.techniques}
+        onDismiss={() => setEvaluationTarget(null)} onSaved={() => {
+          setEvaluationSaved(evaluationTarget.blob)
+          setEvaluationTarget(null)
+        }} />}
     </main>
   )
 }
